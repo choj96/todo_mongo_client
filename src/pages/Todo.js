@@ -2,7 +2,6 @@ import React, { useCallback, useState, useEffect } from "react";
 import axios from "axios";
 import List from "../components/List";
 import Form from "../components/Form";
-import { set } from "mongoose";
 
 // 로컬스토리지에 내용을 읽어온다.
 // MongoDB 에서 목록을 읽어온다.
@@ -31,12 +30,26 @@ const Todo = () => {
       });
     // 초기데이터를 컴포넌트가 마운트 될때 한번 실행한다.
   }, []);
+
   const deleteClick = useCallback(
     (id) => {
-      const nowTodo = todoData.filter((item) => item.id !== id);
+      if (window.confirm("정말 삭제하시겠습니까?")) {
+        let body = {
+          id: id,
+        };
+        axios
+          .post("/api/post/delete", body)
+          .then((response) => {
+            console.log(response);
+            const nowTodo = todoData.filter((item) => item.id !== id);
+            setTodoData(nowTodo);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
       // axios 를 이용해서 MongoDB 삭제 진행
-      setTodoData(nowTodo);
-      localStorage.setItem("todoData2", JSON.stringify(nowTodo));
+      // localStorage.setItem("todoData2", JSON.stringify(nowTodo));
     },
     [todoData]
   );
@@ -79,10 +92,18 @@ const Todo = () => {
   };
 
   const deleteAllClick = () => {
-    // axios 를 이용하여 MongoDB 목록을 비워줌
-    setTodoData([]);
-
-    localStorage.clear();
+    if (window.confirm("정말 삭제하시겠습니까?")) {
+      // axios 를 이용하여 MongoDB 목록을 비워줌
+      axios
+        .post("/api/post/deleteall")
+        .then(() => {
+          setTodoData([]);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+    // localStorage.clear();
   };
 
   return (
