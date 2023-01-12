@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 
 const ListItem = React.memo(({ item, todoData, setTodoData, deleteClick }) => {
-  console.log("ListItem Rendering...", item);
+  // console.log("ListItem Rendering...", item);
 
   // 현재 편집 중인지 아닌지를 관리하는 State 생성
   // isEditing false 라면 목록보여줌
@@ -116,7 +116,7 @@ const ListItem = React.memo(({ item, todoData, setTodoData, deleteClick }) => {
     hours = hours ? hours : 12; // the hour '0' should be '12'
     hours = hours + 1 < 9 ? "0" + hours : hours;
     // 월 표시
-    let months = date.getMonth() + 1;
+    let months = date.getMonth();
     months = months + 1 < 9 ? "0" + (months + 1) : months + 1;
     // 분 표시
     let minutes = date.getMinutes();

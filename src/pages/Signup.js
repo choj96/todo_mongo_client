@@ -72,6 +72,8 @@ const Signup = () => {
             axios.post("/api/user/register", body).then((response) => {
               // console.log(response.data);
               if (response.data.success) {
+                // firebase 강제 로그아웃
+                firebase.auth().signOut();
                 // 회원정보 저장 성공
                 navigate("/login");
               } else {

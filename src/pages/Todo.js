@@ -2,6 +2,7 @@ import React, { useCallback, useState, useEffect } from "react";
 import axios from "axios";
 import List from "../components/List";
 import Form from "../components/Form";
+import Loding from "../components/Loding";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 // React-bootstrap
@@ -45,16 +46,30 @@ const Todo = () => {
   // 목록 정렬 기능
   const [sort, setSort] = useState("최신글");
   useEffect(() => {
-    getList();
+    setSkip(0);
+    getList(search, 0);
   }, [sort]);
+
+  // 검색기능
+  const [search, setSearch] = useState("");
+  const searchHandler = () => {
+    setSkip(0);
+    getList(search);
+  };
   // axios 를 이용해서 서버에 API 호출
   // 전체 목록 호출 메서드
-  const getList = () => {
+  const getList = (_word = "", _stIndex = 0) => {
+    setSkip(0);
+    setSkipToggle(true);
     // 로딩창 보여주기
     setLoding(true);
 
     let body = {
       sort: sort,
+      search: _word,
+      // 사용자 구분용도
+      uid: user.uid, /////////
+      skip: _stIndex,
     };
     axios
       .post("/api/post/list", body)
@@ -62,6 +77,11 @@ const Todo = () => {
         // console.log(response.data);
         if (response.data.success) {
           setTodoData(response.data.initTodo);
+          // 시작하는 skip 번호를 갱신한다.
+          setSkip(response.data.initTodo.length);
+          if (response.data.initTodo.length < 5) {
+            setSkipToggle(false);
+          }
         }
         // 로딩창 숨기기
         setLoding(false);
@@ -71,8 +91,47 @@ const Todo = () => {
         console.log(err);
       });
   };
+  const getListGo = (_word = "", _stIndex = 0) => {
+    // 로딩창 보여주기
+    setLoding(true);
+
+    let body = {
+      sort: sort,
+      search: _word,
+      // 사용자 구분용도
+      uid: user.uid,
+      skip: _stIndex,
+    };
+    axios
+      .post("/api/post/list", body)
+      .then((response) => {
+        // console.log(response.data);
+        if (response.data.success) {
+          const newArr = response.data.initTodo;
+          setTodoData([...todoData, ...newArr]);
+          // 시작하는 skip 번호를 갱신한다.
+          setSkip(skip + newArr.length);
+          if (newArr.length < 5) {
+            setSkipToggle(false);
+          }
+        }
+        // 로딩창 숨기기
+        setLoding(false);
+      })
+
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+  // 목록 개수 출력
+  const [skip, setSkip] = useState(0);
+  const [skipToggle, setSkipToggle] = useState(true);
+
+  const getListMore = () => {
+    getListGo(search, skip);
+  };
   useEffect(() => {
-    getList();
+    getList("", skip);
     // 초기데이터를 컴포넌트가 마운트 될때 한번 실행한다.
   }, []);
 
@@ -100,6 +159,7 @@ const Todo = () => {
   );
 
   const addTodoSubmit = (event) => {
+    // 웹브라우저 초기화 하면 안되므로 막아줌
     event.preventDefault();
 
     // 공백 문자열 제거 추가
@@ -130,7 +190,8 @@ const Todo = () => {
           // 로컬에 저장한다.(DB 예정)
           // localStorage.setItem("todoData2", JSON.stringify([...todoData, addTodo]));
           // 목록 재호출
-          getList();
+          setSkip(0);
+          getList("", 0);
           alert("할일이 등록되었습니다");
         } else {
           alert("할일이 등록 실패하였습니다");
@@ -147,6 +208,7 @@ const Todo = () => {
       axios
         .post("/api/post/deleteall")
         .then(() => {
+          setSkip(0);
           setTodoData([]);
         })
         .catch((err) => {
@@ -177,21 +239,50 @@ const Todo = () => {
           <h1>할일 목록 {userName}</h1>
           <button onClick={deleteAllClick}>Delete All</button>
         </div>
-        {/* 옵션창 */}
-        <DropdownButton title={sort} variant="outline-secondary">
-          <Dropdown.Item onClick={() => setSort("최신글")}>
-            최신글
-          </Dropdown.Item>
-          <Dropdown.Item onClick={() => setSort("과거순")}>
-            과거순
-          </Dropdown.Item>
-        </DropdownButton>
+
+        <div className="flex justify-between mb-3">
+          <DropdownButton title={sort} variant="outline-secondary">
+            <Dropdown.Item onClick={() => setSort("최신글")}>
+              최신글
+            </Dropdown.Item>
+            <Dropdown.Item onClick={() => setSort("과거순")}>
+              과거순
+            </Dropdown.Item>
+          </DropdownButton>
+
+          <div>
+            <label className="mr-2">검색어 </label>
+            <input
+              placeholder="검색어를 입력하세요."
+              type="text"
+              className="border-2"
+              value={search}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  searchHandler();
+                }
+              }}
+            />
+          </div>
+        </div>
 
         <List
           todoData={todoData}
           setTodoData={setTodoData}
           deleteClick={deleteClick}
         />
+        {skipToggle && (
+          <div className="flex justify-end">
+            <button
+              onClick={() => getListMore()}
+              className="p-2 text-blue-400 border-2 border-blue-400 rounded hover:text-white hover:bg-blue-400"
+            >
+              더보기
+            </button>
+          </div>
+        )}
+
         <Form
           todoValue={todoValue}
           setTodoValue={setTodoValue}

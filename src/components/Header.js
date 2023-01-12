@@ -65,7 +65,7 @@ const Header = () => {
               >
                 {user.nickName} Logout
               </button>
-              <Link to="/signup" className="btn btn-warning">
+              <Link to="/userinfo" className="btn btn-warning">
                 User Info
               </Link>
             </div>

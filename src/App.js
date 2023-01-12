@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 
 // react-redux 모듈
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { loginUser, clearUser } from "./reducer/userSlice";
 // fire 라이브러리 모듈활용
 import firebase from "./firebase";
@@ -14,13 +14,14 @@ import Todo from "./pages/Todo";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import UserInfo from "./pages/UserInfo";
 
 export default function App() {
   // action 보내기 store.user.state 업데이트
   const dispatch = useDispatch();
   // 내용 출력하기
   // const user = useSelector((state) => state.user);
-  
+
   // 로그인 상태 테스트
   useEffect(() => {
     // fire 의 사용자 로그인 변경 이벤트
@@ -39,7 +40,7 @@ export default function App() {
       }
     });
   });
-  
+
   // useEffect(() => {
   //   // {state.nickName = "";state.uid = "";  state.accessToken = "";}
   //   // {state.nickName = "..";state.uid = "..";  state.accessToken = "..";}
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/todo" element={<Todo />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/userinfo" element={<UserInfo />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
