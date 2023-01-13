@@ -60,35 +60,39 @@ const Todo = () => {
   // 전체 목록 호출 메서드
   const getList = (_word = "", _stIndex = 0) => {
     setSkip(0);
-    setSkipToggle(true);
     // 로딩창 보여주기
     setLoding(true);
-
-    let body = {
+    // 처음에 버튼 안보이게 처리
+    setSkipToggle(false);
+    const body = {
       sort: sort,
       search: _word,
       // 사용자 구분용도
-      uid: user.uid, /////////
+      uid: user.uid,
       skip: _stIndex,
     };
     axios
       .post("/api/post/list", body)
       .then((response) => {
         // console.log(response.data);
+        // 초기 할일데이터 셋팅
         if (response.data.success) {
           setTodoData(response.data.initTodo);
           // 시작하는 skip 번호를 갱신한다.
           setSkip(response.data.initTodo.length);
-          if (response.data.initTodo.length < 5) {
-            setSkipToggle(false);
+          // console.log(response.data.total);
+
+          // 목록을 DB 에서 호출하면 전체 등록글 수를 받아서
+          // 비교한다.
+          if (response.data.total > 5) {
+            setSkipToggle(true);
           }
         }
         // 로딩창 숨기기
         setLoding(false);
       })
-
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        console.log(error);
       });
   };
   const getListGo = (_word = "", _stIndex = 0) => {
